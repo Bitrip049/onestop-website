@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>One Stop service area map</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha384-sHL9NAb7lN7rfvG5lfHpm643Xkcjzp4jFvuavGOndn6pjVqS6ny56CAt3nsEVT4H" crossorigin="anonymous">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha384-cxOPjt7s7Iz04uaHJceBmS+qpjv2JkIHNVcuOrM+YHwZOmJGBXI00mdUXEq65HTH" crossorigin="anonymous"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;800&display=swap">
+<style>
+html,body{margin:0;height:100%;background:#eae9e9}
+#map{height:100%;width:100%;background:#eae9e9;font-family:'Archivo',system-ui,sans-serif}
+.leaflet-tile-pane{filter:grayscale(1) contrast(1.05)}
+.pin{width:14px;height:14px;background:#201e1d;border:2px solid #f3f2f2;box-shadow:0 0 0 2px #201e1d}
+.pin.hot{background:#ec3013;box-shadow:0 0 0 2px #ec3013}
+.leaflet-tooltip{background:#f3f2f2;color:#201e1d;border:2px solid #201e1d;border-radius:0;font-weight:800;font-size:12px;padding:3px 7px;box-shadow:none}
+.leaflet-tooltip-right:before{border-right-color:#201e1d}
+.leaflet-tooltip-left:before{border-left-color:#201e1d}
+.lowzoom .leaflet-tooltip{display:none}
+.leaflet-popup-content-wrapper{border-radius:0;background:#f3f2f2;color:#201e1d;border:2px solid #201e1d;box-shadow:none}
+.leaflet-popup-tip{background:#201e1d}
+.leaflet-popup-content{margin:12px 16px;font-size:14px;line-height:1.4}
+.leaflet-popup-content strong{display:block;font-size:16px;margin-bottom:4px}
+.leaflet-popup-close-button{color:#201e1d!important;font-weight:800}
+.leaflet-bar{border-radius:0;border:2px solid #201e1d;box-shadow:none}
+.leaflet-bar a{border-radius:0!important;color:#201e1d;font-weight:800;border-bottom:1px solid #201e1d}
+.leaflet-bar a:hover{background:#eae9e9}
+.leaflet-control-attribution{background:rgba(243,242,242,.9);font-size:11px;color:#444141}
+.leaflet-control-attribution a{color:#ae1800}
+</style>
+</head>
+<body>
+<div id="map" role="region" aria-label="Map of Greater Sydney service regions"></div>
+<script>
+var regions = [
+  { name: 'Northern Beaches', suburbs: 'Manly, Dee Why, Mona Vale, Avalon', ll: [-33.753, 151.287], dir: 'left' },
+  { name: 'North Shore', suburbs: 'Chatswood, Hornsby, Mosman, Lane Cove', ll: [-33.797, 151.183], dir: 'right' },
+  { name: 'Hills District', suburbs: 'Castle Hill, Baulkham Hills, Kellyville', ll: [-33.731, 151.005], dir: 'left' },
+  { name: 'Parramatta & West', suburbs: 'Parramatta, Blacktown, Penrith', ll: [-33.815, 150.960], dir: 'left' },
+  { name: 'Inner West', suburbs: 'Marrickville, Leichhardt, Ashfield', ll: [-33.885, 151.155], dir: 'left' },
+  { name: 'Eastern Suburbs', suburbs: 'Bondi, Randwick, Double Bay', ll: [-33.896, 151.242], dir: 'right' },
+  { name: 'South West', suburbs: 'Liverpool, Campbelltown, Camden', ll: [-33.920, 150.923], dir: 'left' },
+  { name: 'St George', suburbs: 'Hurstville, Kogarah, Rockdale', ll: [-33.967, 151.102], dir: 'right' },
+  { name: 'Sutherland Shire', suburbs: 'Cronulla, Sutherland, Engadine', ll: [-34.031, 151.058], dir: 'right' }
+];
+var map = L.map('map', { scrollWheelZoom: false });
+L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18, attribution: '© OpenStreetMap contributors' }).addTo(map);
+var markers = {};
+regions.forEach(function (r) {
+  var m = L.marker(r.ll, { icon: L.divIcon({ className: '', html: '<div class="pin"></div>', iconSize: [14, 14], iconAnchor: [7, 7] }), title: r.name, alt: r.name }).addTo(map);
+  m.bindTooltip(r.name, { permanent: true, direction: r.dir, offset: [r.dir === 'left' ? -10 : 10, 0] });
+  m.bindPopup('<strong>' + r.name + '</strong>' + r.suburbs);
+  markers[r.name] = m;
+});
+var all = L.latLngBounds(regions.map(function (r) { return r.ll; })).pad(0.15);
+map.fitBounds(all);
+function syncZoom() { document.body.classList.toggle('lowzoom', map.getZoom() < 10); }
+map.on('zoomend', syncZoom); syncZoom();
+window.addEventListener('message', function (e) {
+  var name = e.data && e.data.region;
+  Object.keys(markers).forEach(function (n) {
+    var el = markers[n].getElement(); var pin = el && el.querySelector('.pin');
+    if (pin) pin.classList.toggle('hot', n === name);
+  });
+  if (name && markers[name]) { map.flyTo(markers[name].getLatLng(), 11, { duration: 0.8 }); setTimeout(function () { markers[name].openPopup(); }, 900); }
+  else { map.closePopup(); map.flyToBounds(all, { duration: 0.8 }); }
+});
+</script>
+</body>
+</html>

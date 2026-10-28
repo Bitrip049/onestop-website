@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;800&amp;display=swap"></helmet>
+<div style="display:inline-flex;flex-direction:{{ dir }};align-items:{{ align }};gap:{{ gap }};font-family:'Archivo',system-ui,sans-serif;line-height:1">
+  <svg viewBox="0 0 48 48" width="{{ markSize }}" height="{{ markSize }}" style="display:block;flex:none" aria-label="One Stop mark">
+    <rect width="48" height="48" fill="{{ markBg }}"></rect>
+    <path d="M48 0 V15 A15 15 0 0 0 33 0 Z" fill="{{ markFg }}"></path>
+    <polygon points="21,9 21,16 11,22 11,16" fill="{{ markFg }}"></polygon>
+    <rect x="21" y="9" width="7" height="30" fill="{{ markFg }}"></rect>
+    <rect x="13" y="39" width="23" height="4" fill="{{ markFg }}"></rect>
+  </svg>
+  <sc-if value="{{ showText }}" hint-placeholder-val="{{ true }}">
+    <div style="display:flex;flex-direction:column;gap:{{ textGap }};align-items:{{ align }}">
+      <div style="font-weight:800;font-size:{{ titleSize }};letter-spacing:-0.025em;color:{{ text }};white-space:nowrap">ONE STOP</div>
+      <div style="font-weight:600;font-size:{{ subSize }};letter-spacing:0.09em;color:{{ sub }};white-space:nowrap">GUTTER &amp; SOLAR CLEANING</div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:420,&quot;height&quot;:120},&quot;variant&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;horizontal&quot;,&quot;stacked&quot;,&quot;mark&quot;],&quot;default&quot;:&quot;horizontal&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;tone&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;color&quot;,&quot;reverse&quot;,&quot;mono&quot;,&quot;dark&quot;],&quot;default&quot;:&quot;color&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;size&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:48,&quot;min&quot;:16,&quot;max&quot;:200,&quot;tsType&quot;:&quot;number&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const v = this.props.variant ?? 'horizontal';
+    const tone = this.props.tone ?? 'color';
+    const s = this.props.size ?? 48;
+    const T = {
+      color: { markBg: '#ec3013', markFg: '#f3f2f2', text: '#201e1d', sub: '#605d5d' },
+      reverse: { markBg: '#f3f2f2', markFg: '#ec3013', text: '#f3f2f2', sub: '#f3f2f2' },
+      mono: { markBg: '#201e1d', markFg: '#f3f2f2', text: '#201e1d', sub: '#201e1d' },
+      dark: { markBg: '#ec3013', markFg: '#f3f2f2', text: '#f3f2f2', sub: '#bab6b6' }
+    }[tone] || {};
+    const stacked = v === 'stacked';
+    return {
+      ...T,
+      showText: v !== 'mark',
+      dir: stacked ? 'column' : 'row',
+      align: stacked ? 'flex-start' : 'center',
+      gap: (s * (stacked ? 0.3 : 0.26)) + 'px',
+      textGap: (s * 0.1) + 'px',
+      markSize: s,
+      titleSize: (s * (stacked ? 0.66 : 0.56)) + 'px',
+      subSize: (s * (stacked ? 0.2 : 0.18)) + 'px'
+    };
+  }
+}
+</script>
+</body>
+</html>
